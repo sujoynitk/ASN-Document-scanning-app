@@ -1,0 +1,11 @@
+{
+  "requires": {
+    "[production]": {
+      "db": { "kind": "hana" }
+    },
+    "[development]": {
+      "db": { "kind": "sqlite", "credentials": { "url": "db/asn.db" } }
+    }
+  },
+  "build": { "target": "gen" }
+}

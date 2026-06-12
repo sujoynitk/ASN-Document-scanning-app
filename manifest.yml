@@ -1,0 +1,22 @@
+---
+# manifest.yml — Quick CF push (SQLite, no HANA required)
+# Usage: cf push
+applications:
+  - name: asn-btp-app-srv
+    memory: 192M
+    disk_quota: 256M
+    buildpack: nodejs_buildpack
+    command: node_modules/.bin/cds-serve
+    random-route: true
+    env:
+      NODE_ENV: production
+
+  - name: asn-btp-app-approuter
+    memory: 512M
+    disk_quota: 512M
+    buildpack: nodejs_buildpack
+    path: approuter
+    command: node node_modules/@sap/approuter/approuter.js
+    random-route: true
+    env:
+      NODE_ENV: production

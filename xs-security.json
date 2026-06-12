@@ -1,0 +1,9 @@
+{
+  "xsappname": "asn-btp-app",
+  "tenant-mode": "dedicated",
+  "scopes": [],
+  "role-templates": [],
+  "oauth2-configuration": {
+    "token-validity": 43200
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "asn-scan-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ASN Co-packer Scanning UI5 Frontend",
+  "scripts": {
+    "start": "ui5 serve",
+    "build": "ui5 build --all --clean-dest",
+    "lint":  "eslint webapp"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^3",
+    "@ui5/fs": "^3"
+  }
+}

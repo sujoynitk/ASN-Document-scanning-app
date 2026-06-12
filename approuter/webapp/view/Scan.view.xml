@@ -1,0 +1,355 @@
+<mvc:View
+    controllerName="com.example.asnscan.controller.Scan"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+    <Page id="scanPage" enableScrolling="true">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Image src="images/bcone.png" width="10rem" height="1.2rem" decorative="true"/>
+                </contentLeft>
+                <contentMiddle>
+                    <Title text="{i18n>appTitle}" titleStyle="H5" class="asnAppTitle"/>
+                </contentMiddle>
+            </Bar>
+        </customHeader>
+        <content>
+            <IconTabBar id="mainTabBar" stretchContentHeight="false"
+                        backgroundDesign="Transparent"
+                        tabsOverflowMode="StartAndEnd"
+                        select="onTabSelect">
+                <items>
+                    <IconTabFilter id="scanTab"
+                                   icon="sap-icon://camera"
+                                   tooltip="{i18n>navScan}"
+                                   key="scan">
+                        <content>
+                            <!-- ── Step indicator ─────────────────────────── -->
+                            <HBox id="stepBar" alignItems="Center"
+                                  class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop">
+                                <core:HTML id="stepHtml" content="{scan>/stepBarHtml}"/>
+                            </HBox>
+                            <!-- ══ STEP 1 — Upload ════════════════════════ -->
+                            <VBox id="panelStep1" visible="{= ${scan>/currentStep} === 1 }"
+                                  class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop">
+                                <Panel headerText="{i18n>uploadTitle}" expandable="false">
+                                    <content>
+                                        <VBox class="sapUiSmallMargin" alignItems="Center">
+
+                                            <!-- Action Buttons -->
+                                            <HBox justifyContent="Center"
+                                                  class="sapUiSmallMarginBottom sapUiSmallMarginTop">
+                                                <Button
+                                                    icon="sap-icon://camera"
+                                                    text="Take Photo"
+                                                    type="Emphasized"
+                                                    press="onTakePhoto"
+                                                    class="sapUiSmallMarginEnd"/>
+                                                <Button
+                                                    icon="sap-icon://upload"
+                                                    text="Upload Document(s)"
+                                                    type="Default"
+                                                    press="onBrowseFile"/>
+                                            </HBox>
+
+                                            <!-- Empty state -->
+                                            <VBox
+                                                visible="{= ${scan>/uploadedFiles}.length === 0 }"
+                                                alignItems="Center"
+                                                class="sapUiMediumMarginTopBottom">
+                                                <core:Icon src="sap-icon://upload-to-cloud"
+                                                           size="3rem" color="Accent5"
+                                                           class="sapUiSmallMarginBottom"/>
+                                                <Title text="{i18n>uploadHint}" titleStyle="H5"/>
+                                                <Text text="{i18n>uploadHintSub}"
+                                                      class="sapUiSmallMarginTop"
+                                                      textAlign="Center"/>
+                                            </VBox>
+
+                                            <!-- Uploaded files list -->
+                                            <List
+                                                visible="{= ${scan>/uploadedFiles}.length > 0 }"
+                                                items="{scan>/uploadedFiles}"
+                                                headerText="Selected Files ({scan>/uploadedFiles/length})"
+                                                width="100%"
+                                                class="sapUiSmallMarginBottom">
+                                                <InputListItem label="{scan>name}">
+                                                    <Button
+                                                        icon="sap-icon://decline"
+                                                        type="Transparent"
+                                                        tooltip="Remove"
+                                                        press="onRemoveFile"/>
+                                                </InputListItem>
+                                            </List>
+
+                                        </VBox>
+                                    </content>
+                                </Panel>
+                                <HBox justifyContent="End" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+                                    <Button text="{i18n>uploadBtnExtract}"
+                                            icon="sap-icon://process"
+                                            type="Emphasized"
+                                            enabled="{= ${scan>/uploadedFiles}.length > 0 }"
+                                            press="onExtract"/>
+                                </HBox>
+                            </VBox>
+                            <!-- ══ STEP 2 — VLM Results ═══════════════════ -->
+                            <VBox id="panelStep2" visible="{= ${scan>/currentStep} === 2 }"
+                                  class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop">
+                                <Panel id="extractPanel" expandable="false">
+                                    <headerToolbar>
+                                        <Toolbar>
+                                            <Title text="{i18n>extractTitle}" titleStyle="H5"/>
+                                            <ToolbarSpacer/>
+                                            <Text text="{i18n>extractSubtitle}"
+                                                  class="sapUiSmallMarginEnd"/>
+                                        </Toolbar>
+                                    </headerToolbar>
+                                    <content>
+                                        <l:Grid id="extractGrid"
+                                                defaultSpan="L6 M6 S12"
+                                                class="sapUiSmallMargin">
+                                            <!-- ASN Number -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldAsnNumber}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/asnNumber} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/asnNumber}" state="None"/>
+                                            </VBox>
+                                            <!-- Vendor (LIFNR) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldVendor}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/vendor} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/vendor}" state="None"/>
+                                            </VBox>
+                                            <!-- Reference PO (EBELN) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldPO}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/po} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/po}" state="None"/>
+                                            </VBox>
+                                            <!-- PO Item (EBELP) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldPoItem}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/poItem} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/poItem}" state="None"/>
+                                            </VBox>
+                                            <!-- Material (MATNR) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldMaterial}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/material} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/material}" state="None"/>
+                                            </VBox>
+                                            <!-- Quantity (LFIMG) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldQty}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/qty} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/qty}" state="None"/>
+                                            </VBox>
+                                            <!-- Unit of Measure (MEINS) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldUom}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/uom} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/uom}" state="None"/>
+                                            </VBox>
+                                            <!-- Batch Number (CHARG) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldBatch}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/batch} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfMed"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/batch}" state="None"/>
+                                            </VBox>
+                                            <!-- Delivery Date (LFDAT) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldDelivDate}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/delivDate} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfHigh"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/delivDate}" state="None"/>
+                                            </VBox>
+                                            <!-- Expiry Date (VFDAT) -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <HBox alignItems="Center">
+                                                    <Label text="{i18n>fieldExpiryDate}" design="Bold"/>
+                                                    <Text text="{= ${scan>/vlmConf/expiryDate} + '%' }"
+                                                          class="sapUiTinyMarginBegin asnConfMed"/>
+                                                </HBox>
+                                                <ObjectStatus text="{scan>/vlmResult/expiryDate}" state="None"/>
+                                            </VBox>
+                                        </l:Grid>
+                                    </content>
+                                </Panel>
+                                <HBox justifyContent="End" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+                                    <Button text="{i18n>reviewBtnBack}"
+                                            press="onBackToStep1"
+                                            class="sapUiSmallMarginEnd"/>
+                                    <Button text="{i18n>reviewTitle}"
+                                            icon="sap-icon://edit"
+                                            type="Emphasized"
+                                            press="onGoToReview"/>
+                                </HBox>
+                            </VBox>
+                            <!-- ══ STEP 3 — Review & Edit ════════════════ -->
+                            <VBox id="panelStep3" visible="{= ${scan>/currentStep} === 3 }"
+                                  class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop">
+                                <Panel headerText="{i18n>reviewTitle}" expandable="false">
+                                    <content>
+                                        <MessageStrip
+                                            text="{i18n>reviewHint}"
+                                            type="Information"
+                                            showCloseButton="false"
+                                            class="sapUiSmallMargin"/>
+                                        <f:SimpleForm id="reviewForm"
+                                                      editable="true"
+                                                      layout="ResponsiveGridLayout"
+                                                      labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                      columnsL="2" columnsM="2"
+                                                      class="sapUiSmallMarginBeginEnd">
+                                            <f:content>
+                                                <Label text="{i18n>fieldAsnNumber}" required="true"/>
+                                                <Input id="inAsnNumber"  value="{scan>/editableFields/asnNumber}"  placeholder="{i18n>fieldAsnNumber}"/>
+                                                <Label text="{i18n>fieldVendor}" required="true"/>
+                                                <Input id="inVendor"     value="{scan>/editableFields/vendor}"     placeholder="{i18n>fieldVendor}"/>
+                                                <Label text="{i18n>fieldPO}" required="true"/>
+                                                <Input id="inPO"         value="{scan>/editableFields/po}"         placeholder="{i18n>fieldPO}"/>
+                                                <Label text="{i18n>fieldPoItem}"/>
+                                                <Input id="inPoItem"     value="{scan>/editableFields/poItem}"     placeholder="{i18n>fieldPoItem}"/>
+                                                <Label text="{i18n>fieldMaterial}" required="true"/>
+                                                <Input id="inMaterial"   value="{scan>/editableFields/material}"   placeholder="{i18n>fieldMaterial}"/>
+                                                <Label text="{i18n>fieldQty}"/>
+                                                <Input id="inQty"        value="{scan>/editableFields/qty}"        placeholder="{i18n>fieldQty}"/>
+                                                <Label text="{i18n>fieldUom}"/>
+                                                <Input id="inUom"        value="{scan>/editableFields/uom}"        placeholder="{i18n>fieldUom}"/>
+                                                <Label text="{i18n>fieldBatch}"/>
+                                                <Input id="inBatch"      value="{scan>/editableFields/batch}"      placeholder="{i18n>fieldBatch}"/>
+                                                <Label text="{i18n>fieldDelivDate}"/>
+                                                <DatePicker id="inDelivDate"
+                                                            value="{scan>/editableFields/delivDate}"
+                                                            valueFormat="yyyy-MM-dd"
+                                                            displayFormat="yyyy-MM-dd"/>
+                                                <Label text="{i18n>fieldExpiryDate}"/>
+                                                <DatePicker id="inExpiryDate"
+                                                            value="{scan>/editableFields/expiryDate}"
+                                                            valueFormat="yyyy-MM-dd"
+                                                            displayFormat="yyyy-MM-dd"/>
+                                            </f:content>
+                                        </f:SimpleForm>
+                                    </content>
+                                </Panel>
+                                <HBox justifyContent="End" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+                                    <Button text="{i18n>reviewBtnBack}"
+                                            press="onBackToStep2"
+                                            class="sapUiSmallMarginEnd"/>
+                                    <Button id="btnSubmit"
+                                            text="{i18n>reviewBtnSubmit}"
+                                            icon="sap-icon://paper-plane"
+                                            type="Emphasized"
+                                            press="onSubmit"
+                                            enabled="{= !${scan>/submitting} }"/>
+                                </HBox>
+                            </VBox>
+                            <!-- ══ STEP 4 — Success ═══════════════════════ -->
+                            <VBox id="panelStep4" visible="{= ${scan>/currentStep} === 4 }"
+                                  alignItems="Center"
+                                  class="sapUiLargeMarginBeginEnd sapUiMediumMarginTop">
+                                <Panel expandable="false" width="100%" class="sapUiSmallMarginBottom">
+                                    <content>
+                                        <VBox alignItems="Center" class="sapUiMediumMargin">
+                                            <core:Icon src="sap-icon://accept"
+                                                       size="3rem"
+                                                       color="Positive"
+                                                       class="sapUiSmallMarginBottom"/>
+                                            <Title text="{i18n>stagedTitle}" titleStyle="H4"
+                                                   class="sapUiSmallMarginBottom"/>
+                                            <Text text="{i18n>stagedSubtitle}"
+                                                  textAlign="Center"
+                                                  class="sapUiSmallMarginBottom"/>
+                                        </VBox>
+                                        <l:Grid defaultSpan="L6 M6 S12"
+                                                class="sapUiSmallMarginBeginEnd sapUiSmallMarginBottom">
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>stagedId}" design="Bold"/>
+                                                <Text text="{scan>/lastStagedId}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>fieldAsnNumber}" design="Bold"/>
+                                                <Text text="{scan>/editableFields/asnNumber}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>fieldVendor}" design="Bold"/>
+                                                <Text text="{scan>/editableFields/vendor}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>fieldPO}" design="Bold"/>
+                                                <Text text="{scan>/editableFields/po}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>fieldMaterial}" design="Bold"/>
+                                                <Text text="{scan>/editableFields/material}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>fieldQty}" design="Bold"/>
+                                                <Text text="{scan>/editableFields/qty}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>stagedTs}" design="Bold"/>
+                                                <Text text="{scan>/lastStagedTs}"/>
+                                            </VBox>
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="{i18n>stagedStatus}" design="Bold"/>
+                                                <ObjectStatus text="{i18n>statusPending}" state="Information"/>
+                                            </VBox>
+                                        </l:Grid>
+                                        <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
+                                            <Button text="{i18n>btnNewScan}"
+                                                    icon="sap-icon://add"
+                                                    press="onNewScan"
+                                                    class="sapUiSmallMarginEnd"/>
+                                            <Button text="{i18n>btnGoControlTower}"
+                                                    icon="sap-icon://grid"
+                                                    type="Emphasized"
+                                                    press="onNavToControlTower"/>
+                                        </HBox>
+                                    </content>
+                                </Panel>
+                            </VBox>
+                        </content>
+                    </IconTabFilter>
+                    <!-- Monster Control Tower tab — onTabSelect navigates via router -->
+                    <IconTabFilter id="ctTab"
+                                   icon="sap-icon://grid"
+                                   tooltip="{i18n>navControlTower}"
+                                   key="controltower">
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </content>
+    </Page>
+</mvc:View>

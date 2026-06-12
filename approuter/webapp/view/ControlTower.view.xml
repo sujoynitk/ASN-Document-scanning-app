@@ -1,0 +1,203 @@
+<mvc:View
+    controllerName="com.example.asnscan.controller.ControlTower"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+
+    <Page id="ctPage" enableScrolling="true">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Image src="images/bcone.png" width="10rem" height="1.2rem" decorative="true"/>
+                </contentLeft>
+                <contentMiddle>
+                    <Title text="{i18n>appTitle}" titleStyle="H5" class="asnAppTitle"/>
+                </contentMiddle>
+                <contentRight>
+                    <Button icon="sap-icon://refresh" tooltip="{i18n>actionRefresh}"
+                            type="Transparent" press="onRefresh"/>
+                </contentRight>
+            </Bar>
+        </customHeader>
+
+        <content>
+
+            <!-- Tab bar -->
+            <IconTabBar id="ctTabBar"
+                        selectedKey="controltower"
+                        backgroundDesign="Transparent"
+                        tabsOverflowMode="StartAndEnd"
+                        select="onTabSelect">
+                <items>
+                    <IconTabFilter icon="sap-icon://camera"
+                                   tooltip="{i18n>navScan}"
+                                   key="scan"/>
+                    <IconTabFilter icon="sap-icon://grid"
+                                   tooltip="{i18n>navControlTower}"
+                                   key="controltower"/>
+                </items>
+            </IconTabBar>
+
+            <!-- ── KPI Tiles ──────────────────────────────────────────────── -->
+            <HBox id="kpiBar" justifyContent="SpaceBetween"
+                  class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiMediumMarginBottom">
+                <VBox id="kpiCardAll" class="asnKpiCard" alignItems="Center" justifyContent="Center">
+                    <Text text="{i18n>ctKpiTotal}"     class="asnKpiLbl"/>
+                    <Text text="{ct>/kpi/total}"        class="asnKpiNum"/>
+                </VBox>
+                <VBox id="kpiCardPending" class="asnKpiCard" alignItems="Center" justifyContent="Center">
+                    <Text text="{i18n>ctKpiPending}"   class="asnKpiLbl"/>
+                    <Text text="{ct>/kpi/pending}"      class="asnKpiNum asnKpiCritical"/>
+                </VBox>
+                <VBox id="kpiCardProcessed" class="asnKpiCard" alignItems="Center" justifyContent="Center">
+                    <Text text="{i18n>ctKpiProcessed}" class="asnKpiLbl"/>
+                    <Text text="{ct>/kpi/processed}"    class="asnKpiNum asnKpiGood"/>
+                </VBox>
+                <VBox id="kpiCardReview" class="asnKpiCard" alignItems="Center" justifyContent="Center">
+                    <Text text="{i18n>ctKpiReview}"    class="asnKpiLbl"/>
+                    <Text text="{ct>/kpi/review}"       class="asnKpiNum asnKpiCritical"/>
+                </VBox>
+                <VBox id="kpiCardError" class="asnKpiCard" alignItems="Center" justifyContent="Center">
+                    <Text text="{i18n>ctKpiError}"     class="asnKpiLbl"/>
+                    <Text text="{ct>/kpi/error}"        class="asnKpiNum asnKpiError"/>
+                </VBox>
+            </HBox>
+
+            <!-- Filter bar -->
+            <Toolbar id="filterBar" class="sapUiSmallMarginBeginEnd">
+                <SearchField id="ctSearch"
+                             placeholder="{i18n>ctSearchPlaceholder}"
+                             width="40%"
+                             search="onSearch"
+                             liveChange="onSearch"/>
+                <ToolbarSpacer/>
+                <Select id="ctStatusFilter" change="onStatusFilter"
+                        selectedKey="" forceSelection="true" width="12rem">
+                    <items>
+                        <core:Item key=""             text="{i18n>ctFilterAll}"/>
+                        <core:Item key="Pending"      text="{i18n>statusPending}"/>
+                        <core:Item key="Processed"    text="{i18n>statusProcessed}"/>
+                        <core:Item key="Under Review" text="{i18n>statusUnderReview}"/>
+                        <core:Item key="Error"        text="{i18n>statusError}"/>
+                    </items>
+                </Select>
+                <Button icon="sap-icon://table-column"
+                        tooltip="Show/Hide Columns"
+                        type="Transparent"
+                        press="onColumnSettings"/>
+            </Toolbar>
+
+            <!-- Table with horizontal scroll -->
+            <ScrollContainer id="tableScroll"
+                             horizontal="true"
+                             vertical="false"
+                             width="100%"
+                             class="sapUiSmallMarginBottom">
+
+                <Table id="ctTable"
+                       items="{
+                           path: 'asn>/ASNStaging',
+                           sorter: { path: 'createdAt', descending: true },
+                           parameters: {
+                           $$updateGroupId: 'ctGroup',
+                           $select: 'stagingId,asnNumber,vendor,po,poItem,material,qty,uom,batch,delivDate,expiryDate,createdAt,createdBy,status,documentUrl'
+                           }
+                       }"
+                       noDataText="No records found"
+                       mode="None"
+                       fixedLayout="false"
+                       updateFinished="onTableUpdateFinished"
+                       class="sapUiSmallMarginBeginEnd">
+
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="{i18n>ctTitle}" titleStyle="H6" class="asnCtTitle"/>
+                            <ToolbarSpacer/>
+                            <Text id="ctRecordCount" text="{ct>/recordCountText}"/>
+                        </Toolbar>
+                    </headerToolbar>
+
+                    <columns>
+                        <!-- Order must match COLUMNS array in controller -->
+                        <Column id="col_stagingId"  width="9rem"  minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColStagingId}"/>
+                        </Column>
+                        <Column id="col_asnNumber"  width="10rem" minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColAsnNumber}"/>
+                        </Column>
+                        <Column id="col_vendor"     width="9rem"  minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColVendor}"/>
+                        </Column>
+                        <Column id="col_po"         width="10rem" minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColPO}"/>
+                        </Column>
+                        <Column id="col_poItem"     width="6rem"  minScreenWidth="Desktop" demandPopin="true" visible="false">
+                            <Text text="{i18n>ctColPoItem}"/>
+                        </Column>
+                        <Column id="col_material"   width="10rem" minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColMaterial}"/>
+                        </Column>
+                        <Column id="col_qty"        width="6rem"  minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColQty}"/>
+                        </Column>
+                        <Column id="col_uom"        width="5rem"  minScreenWidth="Desktop" demandPopin="true" visible="false">
+                            <Text text="{i18n>ctColUom}"/>
+                        </Column>
+                        <Column id="col_batch"      width="9rem"  minScreenWidth="Desktop" demandPopin="true" visible="false">
+                            <Text text="{i18n>ctColBatch}"/>
+                        </Column>
+                        <Column id="col_delivDate"  width="8rem"  minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColDelivDate}"/>
+                        </Column>
+                        <Column id="col_expiryDate" width="8rem"  minScreenWidth="Desktop" demandPopin="true" visible="false">
+                            <Text text="{i18n>ctColExpiryDate}"/>
+                        </Column>
+                        <Column id="col_createdAt"  width="12rem" minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColStagedAt}"/>
+                        </Column>
+                        <Column id="col_createdBy"  width="9rem"  minScreenWidth="Desktop" demandPopin="true" visible="false">
+                            <Text text="{i18n>ctColStagedBy}"/>
+                        </Column>
+                        <Column id="col_status"     width="9rem"  minScreenWidth="Tablet"  demandPopin="true">
+                            <Text text="{i18n>ctColStatus}"/>
+                        </Column>
+                        <Column id="col_documentUrl" width="10rem" minScreenWidth="Desktop" demandPopin="true" visible="false">
+                            <Text text="{i18n>ctColDocumentUrl}"/>
+                        </Column>                        
+                    </columns>
+
+                    <items>
+                        <ColumnListItem type="Active" press="onRowPress">
+                            <cells>
+                                <ObjectIdentifier title="{asn>stagingId}"/>
+                                <Text text="{asn>asnNumber}"/>
+                                <Text text="{asn>vendor}"/>
+                                <Text text="{asn>po}"/>
+                                <Text text="{asn>poItem}"/>
+                                <Text text="{asn>material}"/>
+                                <Text text="{asn>qty}"/>
+                                <Text text="{asn>uom}"/>
+                                <Text text="{asn>batch}"/>
+                                <Text text="{asn>delivDate}"/>
+                                <Text text="{asn>expiryDate}"/>
+                                <Text text="{path:'asn>createdAt', formatter:'.formatter.formatTimestamp'}"/>
+                                <Text text="{asn>createdBy}"/>
+                                <ObjectStatus
+                                    text="{asn>status}"
+                                    state="{path:'asn>status', formatter:'.formatter.statusState'}"/>
+                                <Link text="{asn>documentUrl}"
+                                    press="onViewDocumentFromTable"
+                                    visible="{= !!${asn>documentUrl} }"/>                                
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+
+                </Table>
+            </ScrollContainer>
+
+        </content>
+    </Page>
+
+</mvc:View>

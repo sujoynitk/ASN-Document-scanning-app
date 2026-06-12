@@ -1,0 +1,7 @@
+node_modules/
+gen/
+mta_archives/
+*.mtar
+db.sqlite
+.env
+*.log

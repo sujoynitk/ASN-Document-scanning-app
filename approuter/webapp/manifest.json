@@ -1,0 +1,77 @@
+{
+  "_version": "1.58.0",
+  "sap.app": {
+    "id": "com.example.asnscan",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": { "version": "1.0.0" },
+    "dataSources": {
+      "ASNService": {
+        "uri": "/asn/",
+        "type": "OData",
+        "settings": { "odataVersion": "4.0" }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": { "icon": "sap-icon://scan-2" },
+    "deviceTypes": { "desktop": true, "tablet": true, "phone": true }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "rootView": {
+      "viewName": "com.example.asnscan.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "appView"
+    },
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
+        "sap.ui.layout": {}
+      }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": { "bundleName": "com.example.asnscan.i18n.i18n" }
+      },
+      "asn": {
+        "dataSource": "ASNService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true
+        }
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "com.example.asnscan.view",
+        "controlId": "appNavContainer",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        { "name": "scan",         "pattern": "",             "target": "scan" },
+        { "name": "controltower", "pattern": "controltower", "target": "controltower" }
+      ],
+      "targets": {
+        "scan":         { "viewName": "Scan",         "viewLevel": 1 },
+        "controltower": { "viewName": "ControlTower", "viewLevel": 1 }
+      }
+    },
+    "resources": {
+      "css": [{ "uri": "css/style.css" }]
+    }
+  }
+}

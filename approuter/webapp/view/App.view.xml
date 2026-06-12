@@ -1,0 +1,11 @@
+<mvc:View
+    controllerName="com.example.asnscan.controller.App"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m">
+
+    <Shell appWidthLimited="false">
+        <NavContainer id="appNavContainer" autoFocus="false"/>
+    </Shell>
+
+</mvc:View>
